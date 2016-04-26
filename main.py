@@ -28,7 +28,7 @@ class Document(db.Document):
     description = db.StringField()
     categories = db.ListField(db.StringField())
     tags = db.ListField(db.StringField())
-    files = db.ListField()
+    files = db.ListField(db.StringField())
     drive = db.StringField()
 
 class DocumentResource(Resource):
