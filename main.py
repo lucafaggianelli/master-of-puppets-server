@@ -1,50 +1,56 @@
 #!/usr/bin/env python
 
-import json
-from bson import json_util
-from bson.objectid import ObjectId
-from flask import Flask, jsonify, url_for, redirect, request
-from flask_pymongo import PyMongo
-from flask_restful import Api, Resource
+import os
+import sys
+from flask import Flask
+from flask.ext.mongoengine import MongoEngine
+from flask.ext.mongorest import MongoRest
+from flask.ext.mongorest.views import ResourceView
+from flask.ext.mongorest.resources import Resource
+from flask.ext.mongorest import operators as ops
+from flask.ext.mongorest import methods
+
 
 app = Flask(__name__)
-app.config["MONGO_DBNAME"] = "mop"
-mongo = PyMongo(app, config_prefix='MONGO')
 
+app.config.update(
+    MONGODB_HOST = 'localhost',
+    MONGODB_PORT = 27017,
+    MONGODB_DB = 'sibilla',
+)
 
-class Document(Resource):
+db = MongoEngine(app)
+api = MongoRest(app, url_prefix='/api')
+app.url_map.strict_slashes = False
 
-  def get(self, id=None):
-    if id is None:
-      cursor = mongo.db.docs.find({}, {"update_time": 0}).limit(10)
-      data = []
-      for doc in cursor:
-        print doc
-        doc['url'] = url_for('document', id=doc.get('_id'))
-        data.append(doc)
+class Document(db.Document):
+    name = db.StringField(max_length=255, required=True)
+    description = db.StringField()
+    categories = db.ListField(db.StringField())
+    tags = db.ListField(db.StringField())
+    files = db.ListField()
+    drive = db.StringField()
 
-      return toJson(data)
+class DocumentResource(Resource):
+    document = Document
 
-    else:
-      doc = mongo.db.docs.find_one_or_404({'_id': ObjectId(id)})
-      return toJson(doc)
+    filters = {
+        'name': [ops.Exact, ops.Startswith, ops.Contains],
+        'description': [ops.Exact, ops.Startswith, ops.Contains],
+        'categories': [ops.Exact],
+        'tags': [ops.Exact],
+    }
 
-  def post(self, id=None):
-    data = {'name': request.form['name']}
-    print data
-    result = mongo.db.docs.insert_one(data)
-
-    return result.inserted_id
-
-
-def toJson(data):
-  return json.dumps(data, default=json_util.default)
-
-
-api = Api(app)
-api.add_resource(Document, '/api/docs/', endpoint='documents')
-api.add_resource(Document, '/api/docs/<string:id>')
+@api.register(name='documents', url='/docs/')
+class DocumentView(ResourceView):
+    resource = DocumentResource
+    methods = [methods.Create, methods.Update,
+            methods.Fetch, methods.List, methods.Delete]
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = 5000
+    if len(sys.argv) > 2:
+        port = int(sys.argv[1])
+
+    app.run(host='0.0.0.0', port=port)
