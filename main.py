@@ -23,30 +23,6 @@ db = MongoEngine(app)
 api = MongoRest(app, url_prefix='/api')
 app.url_map.strict_slashes = False
 
-class Document(db.Document):
-    name = db.StringField(max_length=255, required=True)
-    description = db.StringField()
-    categories = db.ListField(db.StringField())
-    tags = db.ListField(db.StringField())
-    files = db.ListField(db.StringField())
-    drive = db.StringField()
-
-class DocumentResource(Resource):
-    document = Document
-
-    filters = {
-        'name': [ops.Exact, ops.Startswith, ops.Contains],
-        'description': [ops.Exact, ops.Startswith, ops.Contains],
-        'categories': [ops.Exact],
-        'tags': [ops.Exact],
-    }
-
-@api.register(name='documents', url='/docs/')
-class DocumentView(ResourceView):
-    resource = DocumentResource
-    methods = [methods.Create, methods.Update,
-            methods.Fetch, methods.List, methods.Delete]
-
 class Category(db.Document):
     name = db.StringField(max_length=255, required=True)
 
@@ -68,6 +44,37 @@ class TagResource(Resource):
 class TagView(ResourceView):
     resource = TagResource
     methods = [methods.List, methods.Create, methods.Delete]
+
+class Document(db.Document):
+    name = db.StringField(max_length=255, required=True)
+    description = db.StringField()
+    categories = db.ListField(db.ReferenceField(Category))
+    tags = db.ListField(db.ReferenceField(Tag))
+    files = db.ListField(db.StringField())
+    drive = db.StringField()
+
+class DocumentResource(Resource):
+    document = Document
+
+    related_resources = {
+        'categories': CategoryResource,
+        'tags': TagResource
+    }
+    save_related_fields = ['categories']
+
+    filters = {
+        'name': [ops.Exact, ops.Startswith, ops.Contains],
+        'description': [ops.Exact, ops.Startswith, ops.Contains],
+        'categories': [ops.Exact],
+        'tags': [ops.Exact],
+    }
+
+@api.register(name='documents', url='/docs/')
+class DocumentView(ResourceView):
+    resource = DocumentResource
+    methods = [methods.Create, methods.Update,
+            methods.Fetch, methods.List, methods.Delete]
+
 
 if __name__ == "__main__":
     port = 5000
