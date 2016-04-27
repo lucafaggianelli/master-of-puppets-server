@@ -60,7 +60,7 @@ class DocumentResource(Resource):
         'categories': CategoryResource,
         'tags': TagResource
     }
-    save_related_fields = ['categories']
+    save_related_fields = ['categories', 'tags']
 
     filters = {
         'name': [ops.Exact, ops.Startswith, ops.Contains],
