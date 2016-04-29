@@ -45,28 +45,47 @@ class TagView(ResourceView):
     resource = TagResource
     methods = [methods.List, methods.Create, methods.Delete]
 
+class Drive(db.Document):
+    drive_id = db.StringField(max_length=255, required=True)
+    name = db.StringField(max_length=255, required=True)
+
+class DriveResource(Resource):
+    document = Drive
+
+@api.register(name='drives', url='/drives/')
+class DriveView(ResourceView):
+    resource = DriveResource
+    methods = [methods.List, methods.Create, methods.Delete]
+
 class Document(db.Document):
     name = db.StringField(max_length=255, required=True)
     description = db.StringField()
-    categories = db.ListField(db.ReferenceField(Category))
-    tags = db.ListField(db.ReferenceField(Tag))
+    categories = db.ListField(db.ReferenceField(Category, dbref=False))
+    tags = db.ListField(db.ReferenceField(Tag, dbref=False))
     files = db.ListField(db.StringField())
-    drive = db.StringField()
+    drive = db.ReferenceField(Drive, dbref=False)
 
 class DocumentResource(Resource):
     document = Document
 
     related_resources = {
         'categories': CategoryResource,
-        'tags': TagResource
+        'tags': TagResource,
+        'drive': DriveResource,
     }
-    save_related_fields = ['categories', 'tags']
+
+    save_related_fields = [
+        'categories',
+        'tags',
+        'drive',
+    ]
 
     filters = {
         'name': [ops.Exact, ops.Startswith, ops.Contains],
         'description': [ops.Exact, ops.Startswith, ops.Contains],
         'categories': [ops.Exact],
         'tags': [ops.Exact],
+        'drive': [ops.Exact]
     }
 
 @api.register(name='documents', url='/docs/')
