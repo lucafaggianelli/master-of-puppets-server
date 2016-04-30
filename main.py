@@ -69,9 +69,9 @@ class DocumentResource(Resource):
     document = Document
 
     related_resources = {
-        'categories': CategoryResource,
-        'tags': TagResource,
-        'drive': DriveResource,
+        #'categories': CategoryResource,
+        #'tags': TagResource,
+        #'drive': DriveResource,
     }
 
     save_related_fields = [
