@@ -74,11 +74,11 @@ class DocumentResource(Resource):
         #'drive': DriveResource,
     }
 
-    save_related_fields = [
-        'categories',
-        'tags',
-        'drive',
-    ]
+    #save_related_fields = [
+    #    'categories',
+    #    'tags',
+    #    'drive',
+    #]
 
     filters = {
         'name': [ops.Exact, ops.Startswith, ops.Contains],
