@@ -32,7 +32,7 @@ class CategoryResource(Resource):
 @api.register(name='categories', url='/categories/')
 class CategoryView(ResourceView):
     resource = CategoryResource
-    methods = [methods.List, methods.Create, methods.Delete]
+    methods = [methods.List, methods.Create, methods.Update, methods.Delete]
 
 class Tag(db.Document):
     name = db.StringField(max_length=255, required=True)
@@ -43,7 +43,7 @@ class TagResource(Resource):
 @api.register(name='tags', url='/tags/')
 class TagView(ResourceView):
     resource = TagResource
-    methods = [methods.List, methods.Create, methods.Delete]
+    methods = [methods.List, methods.Create, methods.Update, methods.Delete]
 
 class Drive(db.Document):
     drive_id = db.StringField(max_length=255, required=True)
@@ -55,7 +55,7 @@ class DriveResource(Resource):
 @api.register(name='drives', url='/drives/')
 class DriveView(ResourceView):
     resource = DriveResource
-    methods = [methods.List, methods.Create, methods.Delete]
+    methods = [methods.List, methods.Create, methods.Update, methods.Delete]
 
 class Document(db.Document):
     name = db.StringField(max_length=255, required=True)
